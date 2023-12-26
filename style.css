@@ -37,11 +37,6 @@ body {
   -webkit-hyphens: auto;
 }
 
-header {
-  display: grid;
-  grid-template-columns: 1fr 55ch 1fr;
-}
-
 hr {
   border: none;
   font-size: 1.2em;
@@ -65,19 +60,10 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.1;
 }
 
-h1 {
-  grid-row: 1;
-  grid-column: 2;
-}
-
-h1 + p {
-  grid-row: 2;
-  grid-column: 2;
-}
-
+h1,
+h1 + p,
 header details {
-  grid-row: 4;
-  grid-column: 2;
+  text-align: center;
 }
 
 /* }}} */
@@ -95,6 +81,7 @@ p + p {
 .game-scene {
   max-inline-size: 55ch;
   margin: 0px auto;
+  padding-inline: 2ch;
 }
 
 .game-scene:not([hidden]) {
@@ -123,15 +110,20 @@ a:hover {
 img {
   display: block;
   max-inline-size: 100%;
-  height: auto;
+  block-size: auto;
   margin-block: 0;
   margin-inline: auto;
 }
 
 .header-image-wrapper {
-  grid-row: 3;
-  grid-column: 1/4;
   background-color: oklch(45.84% 0.255 280);
+}
+
+@media screen and (width >= 76em) {
+  .header-image-wrapper {
+    mask: url(images/eye.svg) no-repeat;
+    mask-size: contain;
+  }
 }
 
 /* }}} */
