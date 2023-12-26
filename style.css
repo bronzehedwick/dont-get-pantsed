@@ -31,16 +31,15 @@ body {
   font-size: clamp(1.2rem, 0.9000rem + 1.3333vw, 1.6rem);
   line-height: 1.6;
   margin: 0;
-  padding: 1em;
   background-color: var(--background-color);
   color: var(--text-color);
   hyphens: auto;
   -webkit-hyphens: auto;
 }
 
-main {
-  max-inline-size: 55ch;
-  margin: 0px auto;
+header {
+  display: grid;
+  grid-template-columns: 1fr 55ch 1fr;
 }
 
 hr {
@@ -62,8 +61,23 @@ hr::before {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: New York, Georgia, serif;
-  margin-block: 0px;
+  margin-block: 0.5em 0px;
   line-height: 1.1;
+}
+
+h1 {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+h1 + p {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+header details {
+  grid-row: 4;
+  grid-column: 2;
 }
 
 /* }}} */
@@ -76,6 +90,15 @@ p {
 
 p + p {
   text-indent: 4ch;
+}
+
+.game-scene {
+  max-inline-size: 55ch;
+  margin: 0px auto;
+}
+
+.game-scene:not([hidden]) {
+  margin-block-end: 2em;
 }
 
 /* }}} */
@@ -101,7 +124,14 @@ img {
   display: block;
   max-inline-size: 100%;
   height: auto;
+  margin-block: 0;
   margin-inline: auto;
+}
+
+.header-image-wrapper {
+  grid-row: 3;
+  grid-column: 1/4;
+  background-color: oklch(45.84% 0.255 280);
 }
 
 /* }}} */
