@@ -1,96 +1,146 @@
-if (window.NodeList && !NodeList.prototype.forEach) {
-  NodeList.prototype.forEach = Array.prototype.forEach;
-}
-
 (function game() {
   'use strict';
 
-  var achievements = JSON.parse(window.localStorage.getItem('achievements'));
-  var pageKey = window.location.pathname.replace('/article/', '').replace('/','');
-  var totalAchievements = document.querySelectorAll('[data-achievement-text]').length;
-  var achievementsHeadline = document.getElementById('achievements-headline');
+  const rawAchievements = JSON.parse(window.localStorage.getItem('achievements'));
+  const achievements = new Set(rawAchievements ? rawAchievements : []);
+  const totalAchievements = document
+    .querySelectorAll('[data-achievement-text]')
+    .length;
 
-  function addAchievementToDOM(text) {
-    var achievementItem = document.createElement('li');
-    achievementItem.textContent = text;
-    document.getElementById('achievements-list').appendChild(achievementItem);
+  if (achievements.size) {
+    document
+      .getElementById('achievements-count')
+      .textContent = `${achievements.size}/${totalAchievements}`;
+    achievements.forEach(logAchievement);
   }
 
-  if (achievements && achievements[pageKey] && achievements[pageKey].length > 0) {
-    achievements[pageKey].forEach(addAchievementToDOM);
-    achievementsHeadline.innerHTML += ' <span id="achievements-count">' + achievements[pageKey].length + '/' + totalAchievements + '</span>';
-  }
-  else {
-    achievementsHeadline.innerHTML += ' <span id="achievements-count">0/' + totalAchievements + '</span>';
-  }
+  document.documentElement.addEventListener('click', choiceClicks);
 
-  document.documentElement.addEventListener('click', function choiceClicks(event) {
-    var achievementText = event.target.dataset.achievementText;
-    var achievementType = event.target.dataset.achievementType;
-    if (!event.target.closest('.game-button')) {
-      return false;
-    }
-
-    // Achievement.
-    if (achievementText) {
-      if (!achievements || !achievements[pageKey]) {
-        achievements = {};
-        achievements[pageKey] = [];
-      }
-      if (achievements[pageKey].indexOf(achievementText) === -1) {
-        document.getElementById('achievement-message').textContent = achievementText;
-        document.getElementById('achievement').classList.add('achievement--active');
-        document.getElementById('achievement').dataset.achievementType = achievementType;
-        window.setTimeout(function hideAchievementMessage() {
-          document.getElementById('achievement').classList.remove('achievement--active');
-        }, 5000);
-        addAchievementToDOM(achievementText);
-        achievements[pageKey].push(achievementText);
-        window.localStorage.setItem('achievements', JSON.stringify(achievements));
-        document.getElementById('achievements-count').textContent = achievements[pageKey].length + '/' + totalAchievements;
-      }
-      if (achievements[pageKey].length === totalAchievements) {
-        addAchievementToDOM('⭐️ Beat the game to the max!');
-        achievements[pageKey].push('⭐️ Beat the game to the max!');
-        window.localStorage.setItem('achievements', JSON.stringify(achievements));
-        document.getElementById('achievements-count').textContent = ( totalAchievements + 1 ) + '/' + ( totalAchievements + 1 );
-        document.getElementById('achievement-max').classList.add('achievement--active');
-        document.querySelector('#achievement-max button').addEventListener('click', function click() {
-          document.getElementById('achievement-max').classList.remove('achievement--active');
-        }, false);
-      }
-    }
-
+  /**
+   * Handle choices click.
+   * @param {Event} event The `click` event.
+   * @return {void}
+   */
+  function choiceClicks(event) {
+    if (!event.target.closest('.game-button')) return;
     if (event.target.dataset.targetId === 'restart') {
-      // Hide all exposed paths.
-      document.querySelectorAll('.game-scene')
-        .forEach(function hideGamePath(element) {
-          element.hidden = true;
-        });
-      // Re-enable all choices.
-      document.querySelectorAll('.game-button')
-        .forEach(function showChoices(element) {
-          element.removeAttribute('disabled');
-          element.classList.remove('game-button--selected');
-        });
-      // Show the starting segment.
-      document.querySelector('.game-scene').hidden = false;
-      // Scroll to top, aka the beginning of the story.
-      window.scrollTo(0, 0);
+      restartGame()
       return;
     }
+    showSelectedPath(event.target);
+    const achievementText = event.target.dataset.achievementText;
+    if (achievementText && !achievements.has(achievementText)) {
+      displayNotification(achievementText);
+      logAchievement(achievementText);
+      saveAchievements();
+    }
+  }
 
+  /**
+   * Add achievement to the DOM.
+   * @param {string} text The achievement text.
+   * @return {void}
+   */
+  function logAchievement(text) {
+    const achievementElement = document.createElement('li');
+    achievementElement.textContent = text;
+    document.getElementById('achievements-list').appendChild(achievementElement);
+    achievements.add(text);
+  }
+
+  /**
+   * Save achievements state in `localStorage`.
+   * @return {void}
+   */
+  function saveAchievements() {
+    window.localStorage.setItem(
+      'achievements',
+      JSON.stringify(Array.from(achievements))
+    );
+  }
+
+  /**
+   * Render a notification.
+   * @param {string} text The text to display.
+   * @return {void}
+   */
+  function displayNotification(text) {
+    const notificationTemplate = document
+      .getElementById('notification-template')
+      .content
+      .cloneNode(true);
+    notificationTemplate.firstElementChild.children[0].textContent = text;
+    document.body.appendChild(notificationTemplate);
+    const notificationElement = document.getElementById('notification');
+    window.setTimeout(function showAchievementMessage() {
+      notificationElement.classList.add('notification--active');
+    }, 4);
+    window.setTimeout(function hideAchievementMessage() {
+      notificationElement.classList.remove('notification--active');
+    }, 3000);
+    window.setTimeout(function clearAchievementNode() {
+      notificationElement.parentNode.removeChild(notificationElement);
+    }, 3500);
+  }
+
+  /**
+   * Unhide the game path indicated.
+   * @param {Element} buttonElement The choice button the player selected.
+   * @return {void}
+   */
+  function showSelectedPath(buttonElement) {
     // Show the path selected.
-    document.getElementById(event.target.dataset.targetId).hidden = false;
-    // Disable the buttons to choose the current path, and indicate your correct choice.
-    event.target.parentNode.querySelectorAll('.game-button')
+    document.getElementById(buttonElement.dataset.targetId).hidden = false;
+    // Disable the buttons to choose the current path,
+    // and indicate your correct choice.
+    buttonElement.parentNode.querySelectorAll('.game-button')
       .forEach(function disableButtons(button) {
         button.setAttribute('disabled', 'disabled');
-        if (button.dataset.targetId === event.target.dataset.targetId) {
+        if (button.dataset.targetId === buttonElement.dataset.targetId) {
           button.classList.add('game-button--selected');
         }
       });
-  }, false);
-})();
+  }
 
-// vim: foldmethod=marker
+  /**
+   * Restart the game.
+   * @return {void}
+   */
+  function restartGame() {
+    // Hide all exposed path paragraphs.
+    document.querySelectorAll('.game-scene:not([hidden])')
+      .forEach(function hideGamePath(element) {
+        element.hidden = true;
+      });
+    // Re-enable all choice buttons.
+    document.querySelectorAll('.game-button')
+      .forEach(function showChoices(element) {
+        element.removeAttribute('disabled');
+        element.classList.remove('game-button--selected');
+      });
+    // Show the starting segment.
+    document.querySelector('.game-scene').hidden = false;
+    // Scroll to top, aka the beginning of the story.
+    window.setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }, 4);
+  }
+
+  function showEnd() {
+    if (achievements.length === totalAchievements) {
+      logAchievement('⭐️ Beat the game to the max!');
+      achievements.push('⭐️ Beat the game to the max!');
+      window.localStorage.setItem('achievements', JSON.stringify(achievements));
+      document.getElementById('achievements-count').textContent = ( totalAchievements + 1 ) + '/' + ( totalAchievements + 1 );
+      document.getElementById('achievement-max').classList.add('achievement--active');
+      document.querySelector('#achievement-max button').addEventListener('click', function click() {
+        document.getElementById('achievement-max').classList.remove('achievement--active');
+      }, false);
+    }
+  }
+
+})();
