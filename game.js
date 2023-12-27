@@ -5,7 +5,7 @@
   const achievements = new Set(rawAchievements ? rawAchievements : []);
   const totalAchievements = document
     .querySelectorAll('[data-achievement-text]')
-    .length;
+    .length + 1;
 
   if (achievements.size) {
     document
@@ -14,6 +14,7 @@
     achievements.forEach(logAchievement);
   }
 
+  // Event listeners.
   document.documentElement.addEventListener('click', choiceClicks);
 
   /**
@@ -32,6 +33,12 @@
     if (achievementText && !achievements.has(achievementText)) {
       displayNotification(achievementText);
       logAchievement(achievementText);
+      if (achievements.size === totalAchievements - 1) {
+        const endMessage = '⭐️ Beat the game to the max!';
+        displayNotification(endMessage, true);
+        logAchievement(endMessage);
+      }
+      dismissNotifications();
       saveAchievements();
     }
   }
@@ -42,10 +49,13 @@
    * @return {void}
    */
   function logAchievement(text) {
+    achievements.add(text);
     const achievementElement = document.createElement('li');
     achievementElement.textContent = text;
     document.getElementById('achievements-list').appendChild(achievementElement);
-    achievements.add(text);
+    document
+      .getElementById('achievements-count')
+      .textContent = `${achievements.size}/${totalAchievements}`;
   }
 
   /**
@@ -62,24 +72,37 @@
   /**
    * Render a notification.
    * @param {string} text The text to display.
+   * @param {boolean} lower Position notification below the regular spot.
    * @return {void}
    */
-  function displayNotification(text) {
+  function displayNotification(text, lower) {
     const notificationTemplate = document
       .getElementById('notification-template')
       .content
       .cloneNode(true);
     notificationTemplate.firstElementChild.children[0].textContent = text;
+    if (lower) {
+      notificationTemplate
+        .firstElementChild
+        .classList
+        .add('notification--lower');
+      notificationTemplate
+        .firstElementChild
+        .id = 'notification-lower';
+    }
     document.body.appendChild(notificationTemplate);
-    const notificationElement = document.getElementById('notification');
+  }
+
+  function dismissNotifications() {
+    const notifications = document.querySelectorAll('.notification');
     window.setTimeout(function showAchievementMessage() {
-      notificationElement.classList.add('notification--active');
+      notifications.forEach((n) => n.classList.add('notification--active'));
     }, 4);
     window.setTimeout(function hideAchievementMessage() {
-      notificationElement.classList.remove('notification--active');
+      notifications.forEach((n) => n.classList.remove('notification--active'));
     }, 3000);
     window.setTimeout(function clearAchievementNode() {
-      notificationElement.parentNode.removeChild(notificationElement);
+      notifications.forEach((n) => n.parentNode.removeChild(n));
     }, 3500);
   }
 
@@ -128,19 +151,6 @@
         behavior: 'smooth'
       });
     }, 4);
-  }
-
-  function showEnd() {
-    if (achievements.length === totalAchievements) {
-      logAchievement('⭐️ Beat the game to the max!');
-      achievements.push('⭐️ Beat the game to the max!');
-      window.localStorage.setItem('achievements', JSON.stringify(achievements));
-      document.getElementById('achievements-count').textContent = ( totalAchievements + 1 ) + '/' + ( totalAchievements + 1 );
-      document.getElementById('achievement-max').classList.add('achievement--active');
-      document.querySelector('#achievement-max button').addEventListener('click', function click() {
-        document.getElementById('achievement-max').classList.remove('achievement--active');
-      }, false);
-    }
   }
 
 })();

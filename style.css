@@ -219,6 +219,10 @@ button[data-target-id="restart"]:hover::after {
   transform: translateY(8em);
 }
 
+.notification--lower {
+  transform: translateY(16em);
+}
+
 .notification__headline::before {
   content: "🎉 ";
 }
