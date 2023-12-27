@@ -78,6 +78,10 @@ p + p {
   text-indent: 4ch;
 }
 
+li + li {
+  margin-block-start: 0;
+}
+
 .game-scene {
   max-inline-size: 55ch;
   margin: 0px auto;
@@ -193,9 +197,9 @@ button[data-target-id="restart"]:hover::after {
 
 /* }}} */
 
-/* Achievements {{{ */
+/* Notifications {{{ */
 
-.achievement {
+.notification {
   margin: 0;
   padding: 1em;
   border: 2px solid var(--text-color);
@@ -209,40 +213,48 @@ button[data-target-id="restart"]:hover::after {
   box-shadow: 2px 2px 6px var(--de-emphasized-color);
 }
 
-.achievement .achievement__headline::before {
-  content: "🎉 ";
-}
-
-.achievement--active {
+.notification--active {
   opacity: 1;
   visibility: visible;
   transform: translateY(8em);
 }
 
-.achievement__headline {
-  font-size: 1.3em;
-  margin-top: 0px;
+.notification__headline::before {
+  content: "🎉 ";
+}
+
+/* }}} */
+
+/* Achievements {{{ */
+
+.achievements-list {
+  max-inline-size: 25ch;
+  margin-inline: auto;
+  text-align: left;
+  list-style-position: inside;
+  padding-inline-start: 3em;
+  margin-block-start: 0.5em;
 }
 
 .achievements-list:empty::after {
   content: "You got zilch.";
 }
 
-.achievement--max {
-  text-align: center;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  visibility: hidden;
-}
-
-.achievement--max.achievement--active {
-  transform: translate(-50%, -50%);
-  visibility: visible;
-}
-
-.achievement--max > * + * {
-  margin-top: 1em;
-}
+/* .achievement--max { */
+/*   text-align: center; */
+/*   inset-block-start: 50%; */
+/*   inset-inline-start: 50%; */
+/*   visibility: hidden; */
+/* } */
+/**/
+/* .achievement--max.achievement--active { */
+/*   transform: translate(-50%, -50%); */
+/*   visibility: visible; */
+/* } */
+/**/
+/* .achievement--max > * + * { */
+/*   margin-top: 1em; */
+/* } */
 
 /* }}} */
 
