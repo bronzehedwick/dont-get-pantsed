@@ -92,6 +92,19 @@ li + li {
   margin-block-end: 2em;
 }
 
+.game-scene p,
+.game-scene button,
+.game-scene hr {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 250ms ease-in;
+}
+
+.game-scene .show {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* }}} */
 
 /* Links {{{ */

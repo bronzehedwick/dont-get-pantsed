@@ -17,6 +17,33 @@
   // Event listeners.
   document.documentElement.addEventListener('click', choiceClicks);
 
+  // Observe elements to fade them in on scroll.
+  const observer = new IntersectionObserver(
+    handleIntersection,
+    {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0
+    }
+  );
+  document
+    .querySelectorAll('.game-scene p, .game-scene hr, .game-scene button')
+    .forEach(el => observer.observe(el));
+
+  /**
+   * Fade in elements when they appear in the viewport.
+   * @param {object[]} entries The intersecting entries.
+   * @return {void}
+   */
+  function handleIntersection(entries) {
+    entries.forEach(entry => {
+      if (entry.intersectionRatio > 0) {
+        entry.target.classList.add('show');
+        observer.unobserve(entry.target);
+      }
+    });
+  }
+
   /**
    * Handle choices click.
    * @param {Event} event The `click` event.
